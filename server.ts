@@ -3,6 +3,11 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
@@ -16,17 +21,25 @@ async function startServer() {
   const wss = new WebSocketServer({ noServer: true });
 
   server.on('upgrade', (request, socket, head) => {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
+    const { pathname } = new URL(request.url || '', `http://${request.headers.host}`);
+    
+    if (pathname === '/ws') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
   });
 
   wss.on('connection', (ws: WebSocket) => {
+    console.log('New WebSocket connection established');
     let currentRoomId: string | null = null;
     let playerSymbol: 'X' | 'O' | null = null;
 
     ws.on('message', (message: string) => {
       const data = JSON.parse(message.toString());
+      console.log('Received message:', data.type, data.roomId || '');
 
       switch (data.type) {
         case 'JOIN_ROOM': {
@@ -34,6 +47,7 @@ async function startServer() {
           let room = rooms.get(roomId);
 
           if (!room) {
+            console.log('Creating new room:', roomId);
             room = {
               id: roomId,
               players: [],
@@ -115,6 +129,7 @@ async function startServer() {
     });
 
     ws.on('close', () => {
+      console.log('WebSocket connection closed');
       if (currentRoomId) {
         const room = rooms.get(currentRoomId);
         if (room) {
@@ -148,6 +163,9 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static("dist"));
+    app.get("*", (req, res) => {
+      res.sendFile(path.resolve(__dirname, "dist", "index.html"));
+    });
   }
 
   server.listen(PORT, "0.0.0.0", () => {

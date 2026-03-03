@@ -138,7 +138,7 @@ export default function App() {
   // --- WebSocket Handlers ---
   const connectToRoom = (id: string) => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}`);
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
     socketRef.current = ws;
 
     ws.onopen = () => {
@@ -172,6 +172,11 @@ export default function App() {
           ws.close();
           break;
       }
+    };
+    
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      showToast("Gagal terhubung ke server game.", "error");
     };
 
     ws.onclose = () => {
