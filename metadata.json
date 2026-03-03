@@ -1,0 +1,7 @@
+{
+  "name": "SIT Bina Insan Hub",
+  "description": "Pusat informasi dan interaksi digital SDIT Bina Insan Parepare dengan fitur AI, motivasi harian, dan game Tic-Tac-Toe online.",
+  "requestFramePermissions": [
+    "notifications"
+  ]
+}
