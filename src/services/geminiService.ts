@@ -1,11 +1,23 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAIInstance() {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not defined. Please ensure it is set in your environment.");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export const geminiModel = "gemini-3-flash-preview";
 
 export async function askAI(prompt: string, systemInstruction: string) {
   try {
+    const ai = getAIInstance();
     const response = await ai.models.generateContent({
       model: geminiModel,
       contents: prompt,
@@ -18,6 +30,9 @@ export async function askAI(prompt: string, systemInstruction: string) {
     return response.text || "";
   } catch (error) {
     console.error("Gemini Error:", error);
+    if (error instanceof Error && error.message.includes("GEMINI_API_KEY")) {
+      return "Konfigurasi AI belum lengkap. Harap pastikan API Key sudah terpasang.";
+    }
     return "Maaf, asisten sedang sibuk. Silakan coba lagi nanti.";
   }
 }
