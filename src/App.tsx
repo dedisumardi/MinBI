@@ -35,6 +35,7 @@ export default function App() {
   
   // --- Online Game States ---
   const [roomId, setRoomId] = useState("");
+  const [inputRoomId, setInputRoomId] = useState("");
   const [mySymbol, setMySymbol] = useState<'X' | 'O' | null>(null);
   const [playerCount, setPlayerCount] = useState(0);
 
@@ -193,7 +194,7 @@ export default function App() {
 
   const joinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = roomId.trim().toUpperCase();
+    const id = inputRoomId.trim().toUpperCase();
     if (!id) return;
     if (!db) {
       showToast("Fitur online tidak tersedia (Firebase belum dikonfigurasi).", "error");
@@ -672,8 +673,8 @@ Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang h
                     <form onSubmit={joinRoom} className="flex gap-2">
                       <input 
                         type="text" 
-                        value={roomId}
-                        onChange={(e) => setRoomId(e.target.value.toUpperCase())}
+                        value={inputRoomId}
+                        onChange={(e) => setInputRoomId(e.target.value.toUpperCase())}
                         placeholder="KODE ROOM"
                         className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xs focus:border-orange-500 outline-none uppercase font-black tracking-widest text-center text-white"
                       />
