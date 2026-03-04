@@ -1,15 +1,13 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
 let aiInstance: GoogleGenAI | null = null;
 
 function getAIInstance() {
   if (!aiInstance) {
-    // Menggunakan API Key yang diberikan pengguna sebagai fallback
-    let apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     
-    // Jika process.env tidak ada atau string "undefined", gunakan hardcoded key
-    if (!apiKey || apiKey === "undefined" || apiKey === "") {
-      apiKey = "AIzaSyBoxeCEzfN-_6iiShBIARoDEq3TewqKpj0";
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is missing. Please set VITE_GEMINI_API_KEY in your .env file.");
     }
     
     aiInstance = new GoogleGenAI({ apiKey });
