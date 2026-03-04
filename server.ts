@@ -17,11 +17,25 @@ async function startServer() {
   // Game state storage (in-memory for this demo, could use sqlite)
   const rooms = new Map();
 
-  // WebSocket Server
-  const wss = new WebSocketServer({ server, path: '/ws' });
+  // WebSocket Server (no server passed to constructor for manual upgrade handling)
+  const wss = new WebSocketServer({ noServer: true });
+
+  server.on('upgrade', (request, socket, head) => {
+    const { pathname } = new URL(request.url || '', `http://${request.headers.host}`);
+    console.log(`[Server] Upgrade request received for: ${pathname}`);
+    
+    if (pathname === '/ws') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else {
+      console.log(`[Server] Rejecting upgrade for: ${pathname}`);
+      socket.destroy();
+    }
+  });
 
   wss.on('connection', (ws: WebSocket) => {
-    console.log('New WebSocket connection established on /ws');
+    console.log('[Server] New WebSocket connection established');
     let currentRoomId: string | null = null;
     let playerSymbol: 'X' | 'O' | null = null;
 

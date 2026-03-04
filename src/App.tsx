@@ -145,15 +145,17 @@ export default function App() {
       socketRef.current = null;
     }
 
-    const wsUrl = new URL('/ws', window.location.href);
-    wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-    console.log("Connecting to WebSocket:", wsUrl.toString());
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/ws`;
+    console.log("[Client] Connecting to WebSocket:", wsUrl);
     
     try {
-      const ws = new WebSocket(wsUrl.toString());
+      const ws = new WebSocket(wsUrl);
       socketRef.current = ws;
 
       ws.onopen = () => {
+        console.log("[Client] WebSocket Connected Successfully");
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'JOIN_ROOM', roomId: id }));
         }
