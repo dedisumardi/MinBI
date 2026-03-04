@@ -133,7 +133,18 @@ export default function App() {
 
   useEffect(() => {
     if (gameMode === 'PvE' && !xIsNext && !winner && !isDraw) {
-      // ... (Bot logic remains same)
+      setIsBotThinking(true);
+      const timer = setTimeout(() => {
+        const move = getBotMove(board);
+        if (move !== null) {
+          const newBoard = [...board];
+          newBoard[move] = 'O';
+          setBoard(newBoard);
+          setXIsNext(true);
+        }
+        setIsBotThinking(false);
+      }, 500); // Delay for realism
+      return () => clearTimeout(timer);
     }
   }, [xIsNext, gameMode, board, winner, isDraw]);
 
@@ -367,7 +378,7 @@ Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang h
               <img src={LOGO_URL} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
             </div>
           </motion.div>
-          <h1 className="text-2xl font-black tracking-tight uppercase mb-2 font-display">SDIT BINA INSAN PAREPARE</h1>
+          <h1 className="text-2xl font-black tracking-tight uppercase mb-2 font-montserrat">SDIT BINA INSAN PAREPARE</h1>
           <p className="text-xs text-slate-400 font-medium italic opacity-80 max-w-[300px] mb-3">
             "Membentuk Generasi Qur'ani, Cerdas, dan Berakhlak Mulia"
           </p>
