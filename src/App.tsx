@@ -594,7 +594,7 @@ Gunakan informasi lengkap ini untuk menjawab pertanyaan pengguna dengan akurat. 
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute inset-0 z-50 bg-slate-900 flex flex-col"
+              className="fixed inset-0 z-50 bg-slate-900 flex flex-col"
             >
               <div className="p-6 bg-slate-800 border-b border-white/5 flex justify-between items-center shadow-lg">
                 <div className="flex items-center gap-3">
@@ -673,7 +673,7 @@ Gunakan informasi lengkap ini untuk menjawab pertanyaan pengguna dengan akurat. 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              className="absolute inset-0 z-50 bg-slate-900 flex flex-col"
+              className="fixed inset-0 z-50 bg-slate-900 flex flex-col"
             >
               <div className="p-6 bg-slate-800 border-b border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -761,7 +761,7 @@ Gunakan informasi lengkap ini untuk menjawab pertanyaan pengguna dengan akurat. 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              className="absolute inset-0 z-50 bg-slate-900 flex flex-col"
+              className="fixed inset-0 z-50 bg-slate-900 flex flex-col"
             >
               <div className="p-6 bg-slate-800 border-b border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -780,7 +780,7 @@ Gunakan informasi lengkap ini untuk menjawab pertanyaan pengguna dengan akurat. 
                 </button>
               </div>
 
-              <div className="flex-1 flex flex-col items-center justify-center p-6">
+              <div className="flex-1 flex flex-col items-center justify-start pt-10 p-6 overflow-y-auto">
                 {/* Mode Selector */}
                 <div className="flex bg-white/5 p-1 rounded-2xl mb-10 border border-white/10">
                   {(['Offline', 'PvE', 'Online'] as const).map((mode) => (
@@ -931,7 +931,7 @@ Gunakan informasi lengkap ini untuk menjawab pertanyaan pengguna dengan akurat. 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              className="absolute inset-0 z-50 bg-slate-900 flex flex-col"
+              className="fixed inset-0 z-50 bg-slate-900 flex flex-col"
             >
               <div className="p-6 bg-slate-800 border-b border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-3">
