@@ -31,11 +31,23 @@ export async function askAI(prompt: string, systemInstruction: string) {
     });
     
     return response.text || "";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Error:", error);
+    
     if (error instanceof Error && error.message.includes("GEMINI_API_KEY")) {
       return "Konfigurasi AI belum lengkap. Harap pastikan API Key sudah terpasang.";
     }
+
+    // Check for rate limit or quota exceeded
+    if (error?.status === 429 || error?.message?.includes("429") || error?.message?.toLowerCase().includes("quota")) {
+      return "Maaf, limit penggunaan AI tercapai. Mohon tunggu beberapa saat sebelum mencoba lagi.";
+    }
+
+    // Check for network errors
+    if (error?.message?.toLowerCase().includes("network") || error?.message?.toLowerCase().includes("fetch")) {
+      return "Maaf, terjadi kesalahan koneksi. Periksa internet Anda dan coba lagi.";
+    }
+
     return "Maaf, asisten sedang sibuk. Silakan coba lagi nanti.";
   }
 }
