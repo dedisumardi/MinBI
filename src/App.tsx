@@ -137,19 +137,32 @@ export default function App() {
 
   // --- WebSocket Handlers ---
   const connectToRoom = (id: string) => {
+    // Close existing connection if any
+    if (socketRef.current) {
+      if (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING) {
+        socketRef.current.close();
+      }
+      socketRef.current = null;
+    }
+
     const wsUrl = new URL('/ws', window.location.href);
     wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:';
     console.log("Connecting to WebSocket:", wsUrl.toString());
-    const ws = new WebSocket(wsUrl.toString());
-    socketRef.current = ws;
+    
+    try {
+      const ws = new WebSocket(wsUrl.toString());
+      socketRef.current = ws;
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'JOIN_ROOM', roomId: id }));
-    };
+      ws.onopen = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'JOIN_ROOM', roomId: id }));
+        }
+      };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      switch (data.type) {
+      try {
+        const data = JSON.parse(event.data);
+        switch (data.type) {
         case 'ROOM_JOINED':
           setMySymbol(data.symbol);
           setBoard(data.board);
@@ -173,6 +186,9 @@ export default function App() {
           showToast(data.message, "error");
           ws.close();
           break;
+        }
+      } catch (e) {
+        console.error("Error parsing WS message:", e);
       }
     };
     
@@ -186,6 +202,10 @@ export default function App() {
       setMySymbol(null);
       setPlayerCount(0);
     };
+    } catch (err) {
+      console.error("Failed to create WebSocket:", err);
+      showToast("Tidak dapat menginisialisasi koneksi.", "error");
+    }
   };
 
   const createRoom = () => {

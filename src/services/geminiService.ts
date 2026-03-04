@@ -4,19 +4,14 @@ let aiInstance: GoogleGenAI | null = null;
 
 function getAIInstance() {
   if (!aiInstance) {
-    const apiKey = process.env.GEMINI_API_KEY || 
-                   process.env.API_KEY || 
-                   process.env.VITE_GEMINI_API_KEY || 
-                   process.env.VITE_API_KEY;
-    console.log("Debug - API Key sources:", {
-      GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
-      API_KEY: !!process.env.API_KEY,
-      VITE_GEMINI_API_KEY: !!process.env.VITE_GEMINI_API_KEY,
-      VITE_API_KEY: !!process.env.VITE_API_KEY
-    });
+    // Menggunakan API Key yang diberikan pengguna sebagai fallback
+    let apiKey = process.env.GEMINI_API_KEY;
+    
+    // Jika process.env tidak ada atau string "undefined", gunakan hardcoded key
     if (!apiKey || apiKey === "undefined" || apiKey === "") {
-      throw new Error("GEMINI_API_KEY is not defined. Please ensure it is set in your environment.");
+      apiKey = "AIzaSyBoxeCEzfN-_6iiShBIARoDEq3TewqKpj0";
     }
+    
     aiInstance = new GoogleGenAI({ apiKey });
   }
   return aiInstance;
