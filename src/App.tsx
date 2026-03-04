@@ -3,7 +3,7 @@ import {
   Bell, Share2, MoreVertical, Instagram, Youtube, Mail, MessageCircle,
   X, Send, Sparkles, Loader2, RotateCcw, Trophy, User, Cpu, 
   Globe, Copy, Check, BookOpen, Lightbulb, ClipboardCheck,
-  ChevronRight, ExternalLink, Video
+  ChevronRight, ExternalLink, Video, ShoppingBag, Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
@@ -12,6 +12,7 @@ import { twMerge } from 'tailwind-merge';
 import { askAI, getMotivation, getSpmbTips } from './services/geminiService';
 import { db } from './services/firebase';
 import { ref, set, onValue, update, remove, get, child, onDisconnect } from 'firebase/database';
+import { quizQuestions } from './questions';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -52,6 +53,77 @@ export default function App() {
   const [isMotivationLoading, setIsMotivationLoading] = useState(false);
   const [spmbTips, setSpmbTipsText] = useState("");
   const [isSpmbLoading, setIsSpmbLoading] = useState(false);
+
+  // --- Quiz States ---
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showScore, setShowScore] = useState(false);
+  const [isAnswering, setIsAnswering] = useState(false);
+  const [activeQuestions, setActiveQuestions] = useState<{
+    questionText: string;
+    answerOptions: { answerText: string; isCorrect: boolean }[];
+  }[]>([]);
+
+  const generateQuiz = () => {
+    // Shuffle all questions
+    const shuffled = [...quizQuestions].sort(() => 0.5 - Math.random());
+    // Take first 10
+    const selected = shuffled.slice(0, 10);
+
+    const formattedQuestions = selected.map((q) => {
+      // Get 3 random distractors
+      const distractors = quizQuestions
+        .filter(item => item.question !== q.question)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3)
+        .map(item => ({ answerText: item.answer, isCorrect: false }));
+
+      const correctAnswer = { answerText: q.answer, isCorrect: true };
+      
+      // Combine and shuffle options
+      const options = [...distractors, correctAnswer].sort(() => 0.5 - Math.random());
+
+      return {
+        questionText: q.question,
+        answerOptions: options
+      };
+    });
+
+    setActiveQuestions(formattedQuestions);
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowScore(false);
+    setIsAnswering(false);
+  };
+
+  const handleAnswerOptionClick = (isCorrect: boolean) => {
+    if (isAnswering) return;
+    setIsAnswering(true);
+
+    if (isCorrect) {
+      setScore(score + 1);
+      showToast("Jawaban Benar!", "success");
+    } else {
+      const correctAnswer = activeQuestions[currentQuestion].answerOptions.find(opt => opt.isCorrect)?.answerText;
+      showToast(`Salah! Jawaban: ${correctAnswer}`, "error");
+    }
+
+    setTimeout(() => {
+      const nextQuestion = currentQuestion + 1;
+      if (nextQuestion < activeQuestions.length) {
+        setCurrentQuestion(nextQuestion);
+      } else {
+        setShowScore(true);
+      }
+      setIsAnswering(false);
+    }, 2000);
+  };
+
+  const resetQuiz = () => {
+    generateQuiz();
+    setIsQuizOpen(true);
+  };
 
   // --- Utilities ---
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -289,16 +361,51 @@ export default function App() {
     setIsChatLoading(true);
 
     const systemInstruction = `Anda adalah asisten AI resmi SDIT Bina Insan Parepare. Jawablah dengan ramah, informatif, dan gunakan bahasa Indonesia yang baik.
-Berikut adalah informasi resmi tentang sekolah:
-- Nama Sekolah: SDIT Bina Insan Parepare
-- Lokasi: Jl. Andi Sinta, Bacukiki Barat, Kota Parepare (JL. JEND. SUDIRMAN NO 44 A).
-- Google Maps: https://www.google.com/maps/place/SDIT+Bina+Insan+Parepare/@-4.0300571,119.6298626,17z
+
+TENTANG SEKOLAH:
+SDIT BINA INSAN PAREPARE mengintegrasikan nilai keislaman, penguatan akademik, serta literasi bahasa dan teknologi. Setiap anak didik tidak hanya dibimbing untuk menghafal Al-Qur’an, tetapi juga diarahkan menjadi pribadi saleh, cerdas, dan mandiri melalui pendekatan pembelajaran terpadu dan program pembiasaan yang intensif. Sekolah berkomitmen mencetak lulusan yang fasih membaca dan menghafal Al-Qur’an, mampu berpikir kritis, bertindak bijak, dan berakhlak mulia dalam menghadapi tantangan global. Siswa dibekali kemampuan mengakses informasi positif melalui teknologi digital dan ditanamkan nilai-nilai ukhrawi.
+
+VISI:
+Terwujudnya generasi Qur’ani yang unggul dalam penguasaan bahasa, ilmu pengetahuan, dan teknologi.
+
+MISI:
+1. Membentuk generasi penghafal Al-Qur’an yang saleh, cerdas, dan mandiri.
+2. Menyelenggarakan pendidikan terpadu yang berlandaskan nilai-nilai Qur’ani.
+3. Melaksanakan program pembinaan dan pembiasaan penggunaan bahasa Arab dan bahasa Inggris dalam kegiatan pembelajaran.
+4. Memperkenalkan dan mengembangkan keterampilan dasar dalam teknologi informasi dan komunikasi kepada peserta didik.
+
+TUJUAN SEKOLAH:
+1. Meningkatkan motivasi dan semangat peserta didik dalam membaca dan menghafal Al-Qur’an.
+2. Menghasilkan lulusan yang mampu membaca Al-Qur’an secara tartil dan menghafal minimal tiga juz mutqin.
+3. Menyelenggarakan proses pembelajaran dan pendampingan secara efektif guna mencapai hasil akademik yang optimal.
+4. Memfasilitasi pertumbuhan dan perkembangan peserta didik secara maksimal sesuai dengan potensi individual yang dimiliki.
+5. Menyelenggarakan pembelajaran yang mengintegrasikan aspek manfaat duniawi dan ukhrawi.
+6. Memperkuat proses pembinaan untuk membentuk pribadi muslim yang berakhlak mulia.
+7. Meningkatkan semangat belajar serta partisipasi aktif dalam kegiatan sosial.
+8. Menetapkan satu hari dalam setiap pekan sebagai hari pembiasaan penggunaan bahasa Inggris atau bahasa Arab.
+9. Membekali peserta didik dengan kemampuan untuk mengakses informasi positif secara mandiri melalui internet dan teknologi digital.
+
+PROFIL LULUSAN:
+- Keislaman: Dibimbing melalui program Bina Pribadi Islami (BPI).
+- Cinta Al-Qur'an: Mampu membaca Al-Qur’an sesuai kaidah tajwid dan tartil.
+- Hafiz: Menghafal 3 juz Al-Qur’an dengan mutqin.
+- Akademik: Menguatkan kemandirian belajar.
+- Soft Skill: Terbiasa beribadah dengan baik.
+- Melek Teknologi: Menguasai dasar-dasar Microsoft Office dan mampu mengakses informasi positif melalui internet.
+- Bahasa Asing: Mampu memahami dan menggunakan kosakata dasar dalam Bahasa Arab dan Bahasa Inggris.
+
+INFORMASI KONTAK & LEGALITAS:
+- Alamat: Jl. Jend Sudirman No 44 A, Kec. Bacukiki Barat, Kota Parepare.
+- Telepon: 081238967679
+- Email: binainsanpareparesdit@gmail.com
+- Jam Kerja: 07:00 – 16:00 Wita
+- Media Sosial: @sditbinainsanparepare
 - Yayasan: Yayasan Bina Insan Parepare (Ketua: Syamsir, SE), didirikan 28 Januari 2011.
 - Pendirian Sekolah: 7 Mei 2011 (SK 016/D/SKEP/YBI/V/2011).
 - Izin Operasional: 7 April 2016.
-- Status: Sekolah swasta Islam terpadu, fokus pada kurikulum dasar dan nilai-nilai Islam.
 - Operator Sekolah: Dedi Sumardi, S.Kom.
-Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang hal lain, jawablah sesuai pengetahuan umum namun tetap sopan dan islami.`;
+
+Gunakan informasi lengkap ini untuk menjawab pertanyaan pengguna dengan akurat. Jika ditanya tentang hal di luar informasi ini, jawablah sesuai pengetahuan umum namun tetap sopan dan islami.`;
     const reply = await askAI(userMsg, systemInstruction);
     
     setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
@@ -428,6 +535,16 @@ Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang h
             onClick={() => window.open("https://www.tiktok.com/@sditbinainsanparepare", "_blank")}
             icon={<Video size={18} />}
           />
+          <LinkButton 
+            title="Website" 
+            onClick={() => showToast("Website dalam pengembangan - TIM HUMAS", "error")}
+            icon={<Globe size={18} />}
+          />
+          <LinkButton 
+            title="Merchandise" 
+            onClick={() => showToast("Merchandise dalam pengembangan - TIM HUMAS", "error")}
+            icon={<ShoppingBag size={18} />}
+          />
           <motion.button 
             animate={{ opacity: [1, 0.7, 1], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
@@ -437,6 +554,18 @@ Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang h
             <span className="uppercase tracking-wider">Main Game Tic-Tac-Toe 🎮</span>
             <div className="bg-white/20 p-1 rounded-lg group-hover:translate-x-1 transition-transform">
               <ChevronRight size={18} />
+            </div>
+          </motion.button>
+
+          <motion.button 
+            animate={{ opacity: [1, 0.7, 1], scale: [1, 1.02, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.5 }}
+            onClick={resetQuiz}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-5 rounded-2xl font-black text-sm shadow-xl transition-all active:scale-[0.98] flex items-center justify-between group border-0 cursor-pointer"
+          >
+            <span className="uppercase tracking-wider">Game Kuis Islam ☪️</span>
+            <div className="bg-white/20 p-1 rounded-lg group-hover:translate-x-1 transition-transform">
+              <Brain size={18} />
             </div>
           </motion.button>
         </section>
@@ -788,6 +917,79 @@ Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang h
                         </button>
                       )}
                     </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Quiz Modal */}
+        <AnimatePresence>
+          {isQuizOpen && (
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="absolute inset-0 z-50 bg-slate-900 flex flex-col"
+            >
+              <div className="p-6 bg-slate-800 border-b border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="bg-emerald-500 p-2.5 rounded-xl shadow-lg shadow-emerald-500/20">
+                    <Brain size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm uppercase tracking-tight">Kuis Islam</h3>
+                    <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest">
+                      Asah Otak & Iman
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setIsQuizOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 border-0 cursor-pointer">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 flex flex-col items-center justify-start pt-10 p-6 text-center overflow-y-auto">
+                {showScore ? (
+                  <div className="glass-card p-8 rounded-[2.5rem] w-full max-w-sm">
+                    <Trophy className="text-yellow-400 mx-auto mb-4 animate-bounce" size={48} />
+                    <h2 className="text-2xl font-black mb-2">Skor Kamu</h2>
+                    <div className="text-6xl font-black text-emerald-400 mb-6">{score} / {activeQuestions.length}</div>
+                    <p className="text-slate-400 text-sm mb-8">
+                      {score === activeQuestions.length ? "Masya Allah! Sempurna! 🎉" : score > activeQuestions.length / 2 ? "Alhamdulillah! Bagus sekali! 👍" : "Terus belajar ya! 💪"}
+                    </p>
+                    <button onClick={resetQuiz} className="w-full bg-emerald-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-xl hover:bg-emerald-700 transition-all active:scale-95 border-0 cursor-pointer">
+                      Main Lagi
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-sm">
+                    {activeQuestions.length > 0 && (
+                      <>
+                        <div className="flex justify-between items-center mb-6 px-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Pertanyaan {currentQuestion + 1}/{activeQuestions.length}</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Skor: {score}</span>
+                        </div>
+                        
+                        <div className="glass-card p-6 rounded-3xl mb-6 min-h-[120px] flex items-center justify-center">
+                          <h3 className="text-lg font-bold leading-relaxed">{activeQuestions[currentQuestion].questionText}</h3>
+                        </div>
+
+                        <div className="space-y-3">
+                          {activeQuestions[currentQuestion].answerOptions.map((answerOption, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleAnswerOptionClick(answerOption.isCorrect)}
+                              className="w-full bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-sm font-medium transition-all active:scale-[0.98] border border-white/5 text-left flex items-center justify-between group cursor-pointer"
+                            >
+                              {answerOption.answerText}
+                              <ChevronRight size={16} className="text-slate-600 group-hover:text-emerald-400 transition-colors opacity-0 group-hover:opacity-100" />
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
