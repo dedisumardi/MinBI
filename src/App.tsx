@@ -146,7 +146,11 @@ export default function App() {
       const unsubscribe = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          setBoard(data.board || Array(9).fill(null));
+          // Ensure board is always an array of 9 elements, filling missing/undefined slots with null
+          const loadedBoard = data.board || [];
+          const fixedBoard = Array(9).fill(null).map((_, i) => loadedBoard[i] || null);
+          setBoard(fixedBoard);
+          
           setXIsNext(data.xIsNext);
           setPlayerCount(data.players ? Object.keys(data.players).length : 0);
         } else {
