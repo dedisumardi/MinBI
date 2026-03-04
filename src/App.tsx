@@ -137,8 +137,10 @@ export default function App() {
 
   // --- WebSocket Handlers ---
   const connectToRoom = (id: string) => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    const wsUrl = new URL('/ws', window.location.href);
+    wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+    console.log("Connecting to WebSocket:", wsUrl.toString());
+    const ws = new WebSocket(wsUrl.toString());
     socketRef.current = ws;
 
     ws.onopen = () => {

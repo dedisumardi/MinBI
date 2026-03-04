@@ -18,22 +18,10 @@ async function startServer() {
   const rooms = new Map();
 
   // WebSocket Server
-  const wss = new WebSocketServer({ noServer: true });
-
-  server.on('upgrade', (request, socket, head) => {
-    const { pathname } = new URL(request.url || '', `http://${request.headers.host}`);
-    
-    if (pathname === '/ws') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
-      });
-    } else {
-      socket.destroy();
-    }
-  });
+  const wss = new WebSocketServer({ server, path: '/ws' });
 
   wss.on('connection', (ws: WebSocket) => {
-    console.log('New WebSocket connection established');
+    console.log('New WebSocket connection established on /ws');
     let currentRoomId: string | null = null;
     let playerSymbol: 'X' | 'O' | null = null;
 
