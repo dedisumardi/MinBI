@@ -4,10 +4,12 @@ let aiInstance: GoogleGenAI | null = null;
 
 function getAIInstance() {
   if (!aiInstance) {
-    const apiKey = process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+    // Prioritize VITE_GEMINI_API_KEY (standard Vite)
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is missing. Please set VITE_GEMINI_API_KEY in your .env file.");
+      console.error("Missing API Key. Checked import.meta.env.VITE_GEMINI_API_KEY and process.env.GEMINI_API_KEY");
+      throw new Error("GEMINI_API_KEY is missing. Please set VITE_GEMINI_API_KEY in your .env file or Vercel Environment Variables.");
     }
     
     aiInstance = new GoogleGenAI({ apiKey });

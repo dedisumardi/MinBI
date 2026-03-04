@@ -495,7 +495,11 @@ Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang h
                         : "bg-slate-800 text-slate-100 rounded-tl-none border border-white/5"
                     )}>
                       <div className="markdown-body">
-                        <Markdown>{msg.text}</Markdown>
+                        {msg.role === 'user' ? (
+                          <p className="whitespace-pre-wrap mb-0">{msg.text}</p>
+                        ) : (
+                          <Markdown>{msg.text}</Markdown>
+                        )}
                       </div>
                     </div>
                   </div>
