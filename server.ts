@@ -20,23 +20,44 @@ async function startServer() {
   // WebSocket Server (no server passed to constructor for manual upgrade handling)
   const wss = new WebSocketServer({ noServer: true });
 
+  // Heartbeat to keep connections alive
+  const interval = setInterval(() => {
+    wss.clients.forEach((ws: any) => {
+      if (ws.isAlive === false) return ws.terminate();
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000);
+
+  wss.on('close', () => {
+    clearInterval(interval);
+  });
+
   server.on('upgrade', (request, socket, head) => {
-    const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
-    const pathname = url.pathname;
-    console.log(`[Server] Upgrade request received for: ${pathname}`);
-    
-    if (pathname === '/ws') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
-      });
-    } else {
-      console.log(`[Server] Rejecting upgrade for: ${pathname}`);
+    try {
+      const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
+      const pathname = url.pathname;
+      console.log(`[Server] Upgrade request received for: ${pathname}`);
+      
+      if (pathname === '/ws') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('connection', ws, request);
+        });
+      } else {
+        console.log(`[Server] Rejecting upgrade for path: ${pathname} (Expected: /ws)`);
+        socket.destroy();
+      }
+    } catch (err) {
+      console.error(`[Server] Error handling upgrade request:`, err);
       socket.destroy();
     }
   });
 
-  wss.on('connection', (ws: WebSocket) => {
+  wss.on('connection', (ws: WebSocket & { isAlive?: boolean }) => {
     console.log('[Server] New WebSocket connection established');
+    ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
+
     let currentRoomId: string | null = null;
     let playerSymbol: 'X' | 'O' | null = null;
 

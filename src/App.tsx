@@ -3,7 +3,7 @@ import {
   Bell, Share2, MoreVertical, Instagram, Youtube, Mail, MessageCircle,
   X, Send, Sparkles, Loader2, RotateCcw, Trophy, User, Cpu, 
   Globe, Copy, Check, BookOpen, Lightbulb, ClipboardCheck,
-  ChevronRight, ExternalLink
+  ChevronRight, ExternalLink, Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
@@ -246,7 +246,17 @@ export default function App() {
     setChatInput("");
     setIsChatLoading(true);
 
-    const systemInstruction = "Anda adalah asisten AI resmi SDIT Bina Insan Parepare. Jawablah dengan ramah, informatif, dan gunakan bahasa Indonesia yang baik. Anda memiliki akses ke pencarian Google untuk memberikan informasi terbaru dan akurat mengenai SDIT Bina Insan Parepare, kegiatan sekolah, prestasi, dan pengumuman terkini. Fokus pada informasi sekolah, pendidikan karakter, dan nilai-nilai islami.";
+    const systemInstruction = `Anda adalah asisten AI resmi SDIT Bina Insan Parepare. Jawablah dengan ramah, informatif, dan gunakan bahasa Indonesia yang baik.
+Berikut adalah informasi resmi tentang sekolah:
+- Nama Sekolah: SDIT Bina Insan Parepare
+- Lokasi: Jl. Andi Sinta, Bacukiki Barat, Kota Parepare (JL. JEND. SUDIRMAN NO 44 A).
+- Google Maps: https://www.google.com/maps/place/SDIT+Bina+Insan+Parepare/@-4.0300571,119.6298626,17z
+- Yayasan: Yayasan Bina Insan Parepare (Ketua: Syamsir, SE), didirikan 28 Januari 2011.
+- Pendirian Sekolah: 7 Mei 2011 (SK 016/D/SKEP/YBI/V/2011).
+- Izin Operasional: 7 April 2016.
+- Status: Sekolah swasta Islam terpadu, fokus pada kurikulum dasar dan nilai-nilai Islam.
+- Operator Sekolah: Dedi Sumardi, S.Kom.
+Gunakan informasi ini untuk menjawab pertanyaan pengguna. Jika ditanya tentang hal lain, jawablah sesuai pengetahuan umum namun tetap sopan dan islami.`;
     const reply = await askAI(userMsg, systemInstruction);
     
     setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
@@ -370,6 +380,11 @@ export default function App() {
             title="Youtube Channel" 
             onClick={() => window.open("https://www.youtube.com/@sitbinainsanparepare4104", "_blank")}
             icon={<Youtube size={18} />}
+          />
+          <LinkButton 
+            title="TikTok" 
+            onClick={() => window.open("https://www.tiktok.com/@sditbinainsanparepare", "_blank")}
+            icon={<Video size={18} />}
           />
           <motion.button 
             animate={{ opacity: [1, 0.7, 1], scale: [1, 1.02, 1] }}
