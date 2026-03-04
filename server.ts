@@ -26,10 +26,11 @@ async function startServer() {
     let playerSymbol: 'X' | 'O' | null = null;
 
     ws.on('message', (message: string) => {
-      const data = JSON.parse(message.toString());
-      console.log('Received message:', data.type, data.roomId || '');
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('[WS] Received message:', data.type, data.roomId || '');
 
-      switch (data.type) {
+        switch (data.type) {
         case 'JOIN_ROOM': {
           const { roomId } = data;
           let room = rooms.get(roomId);
@@ -114,6 +115,9 @@ async function startServer() {
           break;
         }
       }
+    } catch (err) {
+      console.error('[WS] Error processing message:', err);
+    }
     });
 
     ws.on('close', () => {
