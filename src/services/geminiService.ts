@@ -27,7 +27,6 @@ export async function askAI(prompt: string, systemInstruction: string) {
       contents: prompt,
       config: {
         systemInstruction,
-        tools: [{ googleSearch: {} }],
       },
     });
     

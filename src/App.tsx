@@ -195,11 +195,16 @@ export default function App() {
     };
     
     ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error("[Client] WebSocket error event:", error);
       showToast("Gagal terhubung ke server game.", "error");
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      console.log("[Client] WebSocket connection closed:", {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean
+      });
       setRoomId("");
       setMySymbol(null);
       setPlayerCount(0);

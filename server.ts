@@ -21,7 +21,8 @@ async function startServer() {
   const wss = new WebSocketServer({ noServer: true });
 
   server.on('upgrade', (request, socket, head) => {
-    const { pathname } = new URL(request.url || '', `http://${request.headers.host}`);
+    const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
+    const pathname = url.pathname;
     console.log(`[Server] Upgrade request received for: ${pathname}`);
     
     if (pathname === '/ws') {
